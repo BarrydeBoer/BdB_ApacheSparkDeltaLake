@@ -12,6 +12,11 @@ Three docker containers:
 docker-compose up --build
 ```
 
+## Start JupyterLab and create notebooks
+```
+http://localhost:8888
+```
+Enter the token provided by the delta-lake terminal logging
 
 ## Bring down the containers:
 ```
