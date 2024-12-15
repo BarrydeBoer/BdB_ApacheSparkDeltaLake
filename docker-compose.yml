@@ -1,0 +1,68 @@
+services:
+  spark-master:
+    build:
+      context: ./spark-master
+      dockerfile: dockerfile
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_WEBUI_PORT=8080
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    networks:
+      spark-network:
+        aliases:
+          - spark-master
+
+    volumes:
+      - ./logs/spark-master:/opt/spark/logs
+    command: ["/bin/bash", "-c", "/opt/spark/sbin/start-master.sh && tail -f /dev/null"]
+
+  spark-worker:
+    image: apache/spark:latest
+    container_name: spark-worker
+    hostname: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_WEBUI_PORT=8081
+    ports:
+      - "8081:8081"
+    networks:
+      spark-network:
+        aliases:
+          - spark-worker
+    volumes:
+      - ./logs/spark-worker:/opt/spark/logs
+    depends_on:
+      - spark-master
+    command: ["/bin/bash", "-c", "/opt/spark/sbin/start-worker.sh spark://spark-master:7077 && tail -f /dev/null"]
+
+  delta-lake:
+    build:
+      context: ./delta-lake
+      dockerfile: dockerfile
+    container_name: delta-lake
+    hostname: delta-lake
+    ports:
+      - "8888:8888"
+    networks:
+      spark-network:
+        aliases:
+          - delta-lake
+    volumes: 
+      - ./delta-lake/data:/delta-lake/data
+      - ./delta-lake/scripts:/delta-lake/scripts
+    depends_on: 
+      - spark-master 
+      - spark-worker
+    command: ["/bin/bash", "-c", "tail -f /dev/null"]
+
+
+networks:
+  spark-network:
+    driver: bridge
+ 

@@ -1,0 +1,8 @@
+FROM apache/spark:latest
+
+# Set environment variables
+ENV SPARK_HOME=/opt/spark
+ENV PATH=$PATH:/opt/spark/bin
+
+# Copy spark-defaults.conf to the Spark configuration directory
+COPY spark-defaults.conf $SPARK_HOME/conf/

@@ -1,0 +1,23 @@
+FROM deltaio/delta-docker:latest
+
+# Switch to root user to install dependencies 
+USER root
+
+# Install Python and pip
+RUN apt-get update && apt-get install -y python3 python3-pip
+
+# Set environment variables
+ENV SPARK_HOME=/opt/spark
+ENV PATH=$PATH:/opt/spark/bin
+
+# Install PySpark
+RUN pip3 install pyspark
+
+# Create a new user (e.g., 'sparkuser')
+RUN useradd -ms /bin/bash sparkuser
+
+# Change ownership of the SPARK_HOME directory to the new user
+RUN chown -R sparkuser:sparkuser $SPARK_HOME
+
+# Switch to the new user
+USER sparkuser
